@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OpenOffice Writer Formatting Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        /* Reset some default browser styles */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+
+        header {
+            background: #50b3a2;
+            color: #fff;
+            padding-top: 30px;
+            padding-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            text-align: center;
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        #start-container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #start-container input {
+            padding: 10px;
+            font-size: 18px;
+            width: 80%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #start-container button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #50b3a2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #start-container button:hover {
+            background-color: #429489;
+        }
+
+        #task-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        #task-number {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #timer {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #d9534f;
+        }
+
+        #score {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #task-instruction {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        #content-box {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+        }
+
+        #copy-button, #done-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #50b3a2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        #copy-button:hover, #done-button:hover {
+            background-color: #429489;
+        }
+
+        #progress {
+            font-size: 18px;
+            margin-top: 20px;
+        }
+
+        #end-message {
+            font-size: 24px;
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        #restart-button {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #50b3a2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #restart-button:hover {
+            background-color: #429489;
+        }
+
+        /* Add some responsive design */
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 28px;
+            }
+
+            #task-instruction {
+                font-size: 18px;
+            }
+
+            #copy-button, #done-button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+
+            #start-container input {
+                font-size: 16px;
+                padding: 8px;
+            }
+
+            #start-container button {
+                font-size: 16px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>OpenOffice Writer Formatting Game</h1>
+</header>
+
+<div class="container">
+    <div id="start-container">
+        <input type="text" id="player-name" placeholder="Enter your name">
+        <br>
+        <button id="start-button" onclick="startGame()">Start Game</button>
+    </div>
+
+    <div id="task-container" style="display:none;">
+        <div id="task-number"></div>
+        <div id="timer"></div>
+        <div id="score"></div>
+        <div id="task-instruction"></div>
+        <div id="content-box"></div>
+        <button id="copy-button" onclick="copyContent()">Copy Text</button>
+        <button id="done-button" onclick="taskDone()">Done</button>
+        <div id="progress"></div>
+    </div>
+
+    <div id="end-message" style="display:none;">
+        <p>Great job, <span id="final-player-name"></span>! You've completed all the tasks.</p>
+        <p>Your final score is: <span id="final-score"></span></p>
+    </div>
+
+    <button id="restart-button" onclick="restartGame()" style="display:none;">Play Again</button>
+</div>
+
+<script>
+    const tasks = [
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, bold the names of all the planets mentioned.",
+            content: "Mercury is the smallest planet in our solar system. Venus is the hottest. Earth is our home. Mars is known as the Red Planet."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, make all the animal names italic.",
+            content: "The lion roars in the jungle. The elephant trumpets loudly. The kangaroo hops across Australia."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, underline all the action verbs.",
+            content: "Birds fly in the sky. Fish swim in the ocean. Cheetahs run fast on land."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, change the alignment of the first paragraph to left, the second to center, the third to right, and the fourth to justified.",
+            content: "Paragraph One: The sun rises in the east.\n\nParagraph Two: The moon glows at night.\n\nParagraph Three: Stars twinkle in the sky.\n\nParagraph Four: Planets orbit the sun."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, change the line spacing to 1, 1.5, and 2 for each of the three paragraphs respectively.",
+            content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce volutpat ultricies mauris, ut bibendum nibh mollis sed. Quisque tortor augue, interdum in sollicitudin a, feugiat a odio. Suspendisse lacinia vel neque id lacinia. Pellentesque rhoncus eros orci, quis luctus libero pretium sed. Sed sem erat, interdum id urna sed, malesuada convallis nunc. Nunc ornare lectus in mauris congue, sit amet tincidunt eros auctor. Vivamus imperdiet, odio sed volutpat aliquam, metus tortor lacinia sapien, a pharetra justo felis a magna. In hac habitasse platea dictumst. Mauris viverra nunc quis facilisis pharetra.\n\nSecond Paragraph: Fusce eget nisi leo. Donec vel porttitor metus. Morbi lacinia, quam eu molestie tempus, nisi libero cursus neque, in ultrices tortor enim ut enim. Donec nec erat consequat, porttitor urna in, blandit massa. Sed nibh sapien, bibendum vitae faucibus vitae, finibus non odio. Aliquam lacinia finibus enim nec venenatis. Nunc bibendum elementum leo ac efficitur. Curabitur pulvinar quam et lectus sollicitudin elementum quis quis nunc.\n\nThird Paragraph: Sed in elit pulvinar, feugiat ex sit amet, vehicula leo. Donec consectetur vel diam eu commodo. Maecenas pretium dignissim nibh, non fermentum felis. Ut ut enim nibh. Nam tellus felis, convallis at egestas consectetur, placerat egestas mi. Nullam vel vestibulum ex. Etiam suscipit velit in ipsum molestie consequat accumsan vel ipsum. Vivamus dapibus, mi quis rutrum sagittis, velit quam consectetur quam, ut pretium libero risus in libero. Pellentesque velit massa, efficitur id velit lobortis, iaculis tristique eros."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, increase the indentation of the second paragraph by one level.",
+            content: "First Paragraph: The forest is home to many creatures.\n\nSecond Paragraph: The trees provide shelter.\n\nThird Paragraph: Rivers flow through the woods."
+        },
+        {
+            instruction: "Copy the list below and paste it into OpenOffice Writer. Then, convert it into a bullet list.",
+            content: "Chocolate\nVanilla\nStrawberry\nMint"
+        },
+        {
+            instruction: "Copy the steps below and paste them into OpenOffice Writer. Then, format them as a numbered list.",
+            content: "Mix the ingredients.\nBake in the oven.\nLet it cool.\nServe and enjoy."
+        },
+        {
+            instruction: "Copy the paragraph below and paste it into OpenOffice Writer. Then, use Find and Replace to replace 'fast' with 'quick'.",
+            content: "The fast fox jumps over the fast dog."
+        },
+        {
+            instruction: "Copy the sentence below and paste it into OpenOffice Writer. Then, use the Thesaurus to find a synonym for 'beautiful' and replace it.",
+            content: "The sunset over the ocean was beautiful."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, check the spelling and correct any misspelled words.",
+            content: "The qick brwn fox jmps ovr the lazy dg."
+        },
+        {
+            instruction: "Copy the formatted text below and paste it into OpenOffice Writer. Then, use the Format Paintbrush to apply the same formatting to the second paragraph.",
+            content: "This text is bold, italic, and underlined.\n\nApply the same formatting to this text."
+        },
+        {
+            instruction: "Copy the poem below and paste it into OpenOffice Writer. Then, make every other line italic.",
+            content: "Roses are red,\nViolets are blue,\nSugar is sweet,\nAnd so are you."
+        },
+        {
+            instruction: "Copy the story below and paste it into OpenOffice Writer. Then, bold all the words that start with the letter 's'.",
+            content: "Sammy the squirrel saw a shiny stone under the sun."
+        },
+        {
+            instruction: "Copy the paragraph below and paste it into OpenOffice Writer. Then, change all instances of 'happy' to 'joyful' using Find and Replace.",
+            content: "She was happy because it was her birthday. Her friends were also happy to celebrate with her."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, change the alignment of the title to center and make it bold.",
+            content: "My Summer Vacation\n\nI went to the beach and built sandcastles."
+        },
+        {
+            instruction: "Copy the dialogue below and paste it into OpenOffice Writer. Then, underline all the spoken words.",
+            content: "Mom said, \"Time for dinner!\" I replied, \"Coming!\""
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, create a numbered list of the steps and bold the action verbs.",
+            content: "Wake up early.\nBrush your teeth.\nEat breakfast.\nGo to school."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, use the Thesaurus to find synonyms for 'big' and 'small' and replace them.",
+            content: "The big elephant stood next to the small mouse."
+        },
+        {
+            instruction: "Copy the recipe below and paste it into OpenOffice Writer. Then, increase the indentation of the ingredients list.",
+            content: "Ingredients:\nFlour\nSugar\nEggs\nMilk\n\nInstructions:\nMix all ingredients.\nBake for 30 minutes."
+        },
+        {
+            instruction: "Copy the letter below and paste it into OpenOffice Writer. Then, change the line spacing to double.",
+            content: "Dear Friend,\n\nSed in elit pulvinar, feugiat ex sit amet, vehicula leo. Donec consectetur vel diam eu commodo. Maecenas pretium dignissim nibh, non fermentum felis. Ut ut enim nibh. Nam tellus felis, convallis at egestas consectetur, placerat egestas mi. Nullam vel vestibulum ex. Etiam suscipit velit in ipsum molestie consequat accumsan vel ipsum. Vivamus dapibus, mi quis rutrum sagittis, velit quam consectetur quam, ut pretium libero risus in libero. Pellentesque velit massa, efficitur id velit lobortis, iaculis tristique eros..\n\nBest regards,\nYour Name"
+        },
+        {
+            instruction: "Copy the paragraph below and paste it into OpenOffice Writer. Then, find and correct all the spelling mistakes.",
+            content: "It was a brite and suny day. The brds were singing."
+        },
+        {
+            instruction: "Copy the song lyrics below and paste it into OpenOffice Writer. Then, italicize the chorus.",
+            content: "Verse:\nTwinkle, twinkle, little star,\nHow I wonder what you are.\n\nChorus:\nUp above the world so high,\nLike a diamond in the sky."
+        },
+        {
+            instruction: "Copy the story below and paste it into OpenOffice Writer. Then, use Find and Replace to replace 'said' with 'whispered'.",
+            content: "He said, \"Be careful.\" She said, \"I will.\""
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, use the Format Paintbrush to copy the formatting from the first sentence to the second.",
+            content: "This sentence is bold and underlined.\n\nThis sentence needs the same formatting."
+        },
+        {
+            instruction: "Copy the paragraph below and paste it into OpenOffice Writer. Then, change the alignment to justify.",
+            content: "Justified text stretches each line so that both the left and right margins are even."
+        },
+        {
+            instruction: "Copy the instructions below and paste them into OpenOffice Writer. Then, create a bullet list and italicize the key words.",
+            content: "Pack your bag.\nCheck your schedule.\nBring a water bottle.\nWear comfortable shoes."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, change all the verbs to bold.",
+            content: "The dog barked loudly. The cat hissed. The bird sang sweetly."
+        },
+        {
+            instruction: "Copy the email below and paste it into OpenOffice Writer. Then, adjust the indentation of the paragraphs to make it look like a formal email.",
+            content: "Subject: Meeting Reminder\n\nDear Team,\n\nThis is a reminder for our meeting tomorrow at 10 AM.\n\nBest regards,\nManager"
+        },
+        {
+            instruction: "Copy the poem below and paste it into OpenOffice Writer. Then, use the Thesaurus to find a synonym for 'fast' and 'slow' and replace them.",
+            content: "The fast hare raced ahead,\nThe slow tortoise trailed behind."
+        },
+        {
+            instruction: "Copy the text below and paste it into OpenOffice Writer. Then, use Find and Replace to correct 'teh' to 'the' wherever it appears.",
+            content: "Teh sun rises in teh east and sets in teh west."
+        }
+    ];
+
+    let playerName = '';
+    let currentTaskIndex = 0;
+    let timerInterval;
+    let timeLeft = 240; // 4 minutes in seconds
+    let score = 0;
+
+    function startGame() {
+        playerName = document.getElementById('player-name').value.trim();
+        if (playerName === '') {
+            alert('Please enter your name to start the game.');
+            return;
+        }
+        document.getElementById('start-container').style.display = 'none';
+        document.getElementById('task-container').style.display = 'block';
+        shuffleTasks();
+        showTask();
+        startTimer();
+    }
+
+    function showTask() {
+        resetTimer();
+        let task = tasks[currentTaskIndex];
+        document.getElementById('task-number').textContent = `Task ${currentTaskIndex + 1} of ${tasks.length}`;
+        document.getElementById('score').textContent = `Score: ${score}`;
+        document.getElementById('task-instruction').innerHTML = task.instruction;
+        document.getElementById('content-box').textContent = task.content;
+        document.getElementById('progress').textContent = '';
+        document.getElementById('done-button').style.display = 'inline-block';
+    }
+
+    function copyContent() {
+        let content = document.getElementById('content-box').textContent;
+        navigator.clipboard.writeText(content).then(() => {
+            document.getElementById('progress').textContent = 'Text copied! Proceed to OpenOffice Writer to perform the task.';
+        }, () => {
+            alert('Failed to copy text.');
+        });
+    }
+
+    function taskDone() {
+        clearInterval(timerInterval);
+        score += calculateScore();
+        document.getElementById('score').textContent = `Score: ${score}`;
+        document.getElementById('progress').textContent = 'Great! Moving to the next task.';
+        document.getElementById('done-button').style.display = 'none';
+        nextTask();
+    }
+
+    function calculateScore() {
+        // For simplicity, full points if timeLeft > 0, otherwise 0
+        return timeLeft > 0 ? 10 : 0;
+    }
+
+    function nextTask() {
+        currentTaskIndex++;
+        if (currentTaskIndex < tasks.length) {
+            showTask();
+            startTimer();
+        } else {
+            endGame();
+        }
+    }
+
+    function endGame() {
+        clearInterval(timerInterval);
+        document.getElementById('task-container').style.display = 'none';
+        document.getElementById('end-message').style.display = 'block';
+        document.getElementById('final-player-name').textContent = playerName;
+        document.getElementById('final-score').textContent = score;
+        document.getElementById('restart-button').style.display = 'block';
+    }
+
+    function restartGame() {
+        playerName = '';
+        currentTaskIndex = 0;
+        score = 0;
+        document.getElementById('start-container').style.display = 'block';
+        document.getElementById('task-container').style.display = 'none';
+        document.getElementById('end-message').style.display = 'none';
+        document.getElementById('restart-button').style.display = 'none';
+        document.getElementById('player-name').value = '';
+    }
+
+    function shuffleTasks() {
+        tasks.sort(() => Math.random() - 0.5);
+    }
+
+    function startTimer() {
+        timeLeft = 240; // Reset to 4 minutes
+        clearInterval(timerInterval);
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            updateTimerDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                alert('Time is up! Moving to the next task.');
+                taskDone();
+            }
+        }, 1000);
+    }
+
+    function resetTimer() {
+        clearInterval(timerInterval);
+        startTimer();
+    }
+
+    function updateTimerDisplay() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        document.getElementById('timer').textContent = `Time Left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+</script>
+</body>
+</html>
